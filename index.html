@@ -3,344 +3,1335 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>점심 메뉴 룰렛 앱</title>
-  <!-- GSAP CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <title>점심 메뉴 룰렛</title>
+
+  <!--
+    권장 방식:
+    GSAP 파일을 index.html과 같은 폴더에 저장한 뒤 아래처럼 불러옵니다.
+
+    폴더 구조
+    ├─ index.html
+    └─ gsap.min.js
+  -->
+  <script src="./gsap.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
     }
 
     body {
-      background-color: #f4f7f6;
+      min-height: 100vh;
+      padding: 30px 20px;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+
+      font-family:
+        "Pretendard",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background:
+        linear-gradient(
+          135deg,
+          #f8fafc,
+          #eef6f3
+        );
+
+      color: #2f3542;
     }
 
     h1 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-size: clamp(1.8rem, 6vw, 2.4rem);
       color: #333;
+      text-align: center;
     }
 
-    /* 룰렛 컨테이너 */
+    /* ==========================
+       룰렛
+    ========================== */
+
     .roulette-container {
       position: relative;
-      width: 360px;
-      height: 360px;
-      margin-bottom: 25px;
+
+      width: min(88vw, 400px);
+      aspect-ratio: 1 / 1;
+
+      margin-bottom: 20px;
     }
 
-    /* 상단 지침 바늘 (화살표) */
+    #rouletteCanvas {
+      display: block;
+
+      width: 100%;
+      height: 100%;
+
+      border-radius: 50%;
+
+      box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.15);
+
+      will-change: transform;
+    }
+
+    /* 상단 포인터 */
+
     .pointer {
       position: absolute;
-      top: -15px;
+
+      top: -13px;
       left: 50%;
+
       transform: translateX(-50%);
+
       width: 0;
       height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 25px solid #ff4757;
-      z-index: 10;
+
+      border-left: 17px solid transparent;
+      border-right: 17px solid transparent;
+      border-top: 32px solid #ff4757;
+
+      z-index: 20;
+
+      filter:
+        drop-shadow(
+          0 3px 3px
+          rgba(0, 0, 0, 0.2)
+        );
     }
 
-    /* 룰렛 캔버스 */
-    #rouletteCanvas {
-      width: 360px;
-      height: 360px;
-      border-radius: 50%;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
+    /* 중앙 LUNCH */
 
-    /* 중앙 LUNCH 원 */
     .center-circle {
       position: absolute;
+
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
-      background-color: #ffffff;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+      transform:
+        translate(-50%, -50%);
+
+      width: 90px;
+      height: 90px;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.1rem;
+
+      border-radius: 50%;
+
+      background: #ffffff;
+
+      border: 5px solid
+        rgba(255, 255, 255, 0.8);
+
+      box-shadow:
+        0 4px 15px
+        rgba(0, 0, 0, 0.22);
+
+      font-size: 1.05rem;
+      font-weight: 900;
+
+      letter-spacing: 1.5px;
+
       color: #2ed573;
-      z-index: 5;
-      letter-spacing: 1px;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
-    /* 컨트롤 요소들 */
+    /* ==========================
+       결과
+    ========================== */
+
+    .result {
+      min-height: 45px;
+
+      margin-bottom: 15px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+
+      font-size: 1.3rem;
+      font-weight: 800;
+
+      color: #2f3542;
+    }
+
+    .result.highlight {
+      color: #ff4757;
+    }
+
+    /* ==========================
+       컨트롤
+    ========================== */
+
     .controls {
+      width: min(100%, 400px);
+
       display: flex;
       flex-direction: column;
+
       align-items: center;
+
       gap: 15px;
-      width: 100%;
-      max-width: 360px;
     }
 
     .spin-btn {
       width: 100%;
-      padding: 14px;
-      background-color: #ff4757;
-      color: #fff;
+
+      padding: 15px;
+
       border: none;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      font-weight: bold;
+      border-radius: 12px;
+
+      background: #ff4757;
+
+      color: white;
+
+      font-size: 1.15rem;
+      font-weight: 800;
+
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-      box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+
+      box-shadow:
+        0 5px 15px
+        rgba(255, 71, 87, 0.3);
+
+      transition:
+        background-color 0.2s,
+        transform 0.1s,
+        box-shadow 0.2s;
     }
 
-    .spin-btn:hover {
-      background-color: #ff6b81;
+    .spin-btn:hover:not(:disabled) {
+      background: #ff6b81;
+
+      box-shadow:
+        0 7px 18px
+        rgba(255, 71, 87, 0.35);
     }
 
-    .spin-btn:active {
+    .spin-btn:active:not(:disabled) {
       transform: scale(0.98);
     }
 
-    .spin-btn:disabled {
-      background-color: #ccc;
+    button:disabled,
+    input:disabled {
       cursor: not-allowed;
-      box-shadow: none;
+      opacity: 0.55;
     }
 
-    /* 메뉴 관리 입력 폼 */
+    /* ==========================
+       메뉴 입력
+    ========================== */
+
     .input-group {
       display: flex;
+
       width: 100%;
+
       gap: 8px;
     }
 
     .input-group input {
+      min-width: 0;
       flex: 1;
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      outline: none;
+
+      padding: 11px 13px;
+
+      border:
+        1px solid #dfe4ea;
+
+      border-radius: 9px;
+
+      background: white;
+
       font-size: 0.95rem;
+
+      outline: none;
+
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #2ed573;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(46, 213, 115, 0.12);
     }
 
     .input-group button {
-      padding: 10px 16px;
-      background-color: #2ed573;
-      color: white;
+      padding:
+        10px 18px;
+
       border: none;
-      border-radius: 8px;
-      font-weight: bold;
+      border-radius: 9px;
+
+      background: #2ed573;
+
+      color: white;
+
+      font-weight: 800;
+
       cursor: pointer;
+
+      transition:
+        background-color 0.2s;
     }
 
-    /* 메뉴 태그 목록 */
+    .input-group button:hover:not(:disabled) {
+      background: #26bd65;
+    }
+
+    /* ==========================
+       메뉴 목록
+    ========================== */
+
     .menu-list {
       display: flex;
+
       flex-wrap: wrap;
+
       gap: 8px;
+
       width: 100%;
-      max-height: 120px;
+
+      max-height: 125px;
+
       overflow-y: auto;
-      padding: 5px;
+
+      padding: 6px 2px;
     }
 
     .menu-item {
-      background-color: #eccc68;
-      color: #333;
-      padding: 6px 12px;
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      padding:
+        7px 11px;
+
       border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
+
+      background: #ffeaa7;
+
+      color: #333;
+
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .delete-btn {
+      width: 18px;
+      height: 18px;
+
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
+      justify-content: center;
 
-    .menu-item span {
-      cursor: pointer;
+      border: none;
+
+      background: transparent;
+
       color: #ff4757;
+
+      font-size: 1.1rem;
       font-weight: bold;
+
+      cursor: pointer;
+
+      line-height: 1;
     }
 
-    /* 결과 텍스트 */
-    .result {
-      margin-top: 15px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #2f3542;
-      height: 30px;
+    .delete-btn:hover:not(:disabled) {
+      color: #d63031;
+    }
+
+    /* 설명 */
+
+    .help-text {
+      width: 100%;
+
+      text-align: center;
+
+      color: #747d8c;
+
+      font-size: 0.78rem;
+
+      line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+
+      body {
+        padding:
+          20px 15px;
+      }
+
+      .center-circle {
+        width: 75px;
+        height: 75px;
+
+        font-size: 0.9rem;
+      }
+
+      .result {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
+
 <body>
 
-  <h1>오늘 뭐 먹지? 🍔</h1>
+  <h1>오늘 뭐 먹지? 🍱</h1>
+
 
   <div class="roulette-container">
+
     <div class="pointer"></div>
-    <canvas id="rouletteCanvas" width="360" height="360"></canvas>
-    <div class="center-circle">LUNCH</div>
-  </div>
 
-  <div class="result" id="resultText"></div>
+    <canvas
+      id="rouletteCanvas"
+      width="600"
+      height="600"
+      aria-label="점심 메뉴 룰렛">
+    </canvas>
 
-  <div class="controls">
-    <button class="spin-btn" id="spinBtn">돌리기!</button>
-
-    <div class="input-group">
-      <input type="text" id="menuInput" placeholder="새 메뉴 입력 (예: 돈까스)" maxlength="10">
-      <button id="addBtn">추가</button>
+    <div class="center-circle">
+      LUNCH
     </div>
 
-    <div class="menu-list" id="menuList"></div>
   </div>
 
+
+  <div
+    class="result"
+    id="resultText"
+    aria-live="polite">
+    룰렛을 돌려 점심 메뉴를 정해보세요.
+  </div>
+
+
+  <div class="controls">
+
+    <button
+      type="button"
+      class="spin-btn"
+      id="spinBtn">
+      🎯 룰렛 돌리기
+    </button>
+
+
+    <div class="input-group">
+
+      <input
+        type="text"
+        id="menuInput"
+        placeholder="새 메뉴 입력 (예: 돈까스)"
+        maxlength="12"
+        autocomplete="off">
+
+      <button
+        type="button"
+        id="addBtn">
+        추가
+      </button>
+
+    </div>
+
+
+    <div
+      class="menu-list"
+      id="menuList">
+    </div>
+
+
+    <p class="help-text">
+      메뉴는 최소 2개 이상 필요합니다.
+      룰렛이 회전하는 동안에는 메뉴를 변경할 수 없습니다.
+    </p>
+
+  </div>
+
+
   <script>
+    "use strict";
+
+
+    /* ==========================
+       설정
+    ========================== */
+
     const colors = [
-      "#ff7675", "#74b9ff", "#55efc4", "#ffeaa7", 
-      "#a29bfe", "#fd79a8", "#fdcb6e", "#81ecec"
+      "#ff7675",
+      "#74b9ff",
+      "#55efc4",
+      "#f6c85f",
+      "#a29bfe",
+      "#fd79a8",
+      "#e17055",
+      "#00cec9",
+      "#6c5ce7",
+      "#00b894"
     ];
 
-    let menus = ["김치찌개", "짜장면", "제육볶음", "돈까스", "초밥", "햄버거"];
-    
-    const canvas = document.getElementById("rouletteCanvas");
-    const ctx = canvas.getContext("2d");
-    const spinBtn = document.getElementById("spinBtn");
-    const menuInput = document.getElementById("menuInput");
-    const addBtn = document.getElementById("addBtn");
-    const menuList = document.getElementById("menuList");
-    const resultText = document.getElementById("resultText");
 
-    let rouletteState = { rotation: 0 };
+    let menus = [
+      "김치찌개",
+      "짜장면",
+      "제육볶음",
+      "돈까스",
+      "초밥",
+      "햄버거"
+    ];
 
-    function drawRoulette() {
-      const numSlices = menus.length;
-      const arcSize = (2 * Math.PI) / numSlices;
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = canvas.width / 2;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    /* 최대 메뉴 개수 */
 
-      menus.forEach((menu, i) => {
-        const angle = i * arcSize;
+    const MAX_MENUS = 12;
 
-        // 1. 파이 조각 그리기
-        ctx.beginPath();
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
-        ctx.fill();
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
-        // 2. 텍스트 그리기
-        ctx.save();
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 16px Pretendard, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+    /* ==========================
+       DOM
+    ========================== */
 
-        const textAngle = angle + arcSize / 2;
-        const textRadius = radius * 0.65;
+    const canvas =
+      document.getElementById(
+        "rouletteCanvas"
+      );
 
-        ctx.translate(
-          centerX + Math.cos(textAngle) * textRadius,
-          centerY + Math.sin(textAngle) * textRadius
-        );
-        ctx.rotate(textAngle + Math.PI / 2);
+    const ctx =
+      canvas.getContext("2d");
 
-        ctx.fillText(menu, 0, 0);
-        ctx.restore();
-      });
-    }
 
-    function updateMenuList() {
-      menuList.innerHTML = "";
-      menus.forEach((menu, index) => {
-        const tag = document.createElement("div");
-        tag.className = "menu-item";
-        tag.innerHTML = `${menu} <span onclick="removeMenu(${index})">&times;</span>`;
-        menuList.appendChild(tag);
-      });
-      drawRoulette();
-    }
+    const spinBtn =
+      document.getElementById(
+        "spinBtn"
+      );
 
-    window.removeMenu = function(index) {
-      if (menus.length <= 2) {
-        alert("최소 2개 이상의 메뉴가 필요합니다.");
-        return;
-      }
-      menus.splice(index, 1);
-      updateMenuList();
+
+    const menuInput =
+      document.getElementById(
+        "menuInput"
+      );
+
+
+    const addBtn =
+      document.getElementById(
+        "addBtn"
+      );
+
+
+    const menuList =
+      document.getElementById(
+        "menuList"
+      );
+
+
+    const resultText =
+      document.getElementById(
+        "resultText"
+      );
+
+
+    /* ==========================
+       상태값
+    ========================== */
+
+    const rouletteState = {
+      rotation: 0
     };
 
-    addBtn.addEventListener("click", () => {
-      const newMenu = menuInput.value.trim();
-      if (newMenu) {
-        menus.push(newMenu);
-        menuInput.value = "";
-        updateMenuList();
-      }
-    });
 
-    menuInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") addBtn.click();
-    });
+    let isSpinning = false;
 
-    spinBtn.addEventListener("click", () => {
+
+    /* ==========================
+       GSAP 확인
+    ========================== */
+
+    if (typeof gsap === "undefined") {
+
+      resultText.textContent =
+        "GSAP 파일을 불러올 수 없습니다.";
+
       spinBtn.disabled = true;
-      resultText.textContent = "";
 
-      const randomDegree = Math.floor(Math.random() * 360);
-      const targetRotation = rouletteState.rotation + (360 * 5) + randomDegree;
-
-      gsap.to(rouletteState, {
-        rotation: targetRotation,
-        duration: 4.5,
-        ease: "power4.out",
-        onUpdate: () => {
-          canvas.style.transform = `rotate(${rouletteState.rotation}deg)`;
-        },
-        onComplete: () => {
-          spinBtn.disabled = false;
-          calculateResult(rouletteState.rotation);
-        }
-      });
-    });
-
-    // [수정된 판정 공식]
-    function calculateResult(totalRotation) {
-      const numSlices = menus.length;
-      const sliceAngle = 360 / numSlices;
-      
-      // 회전 후 실제 각도 (0~359도)
-      const currentRotation = totalRotation % 360;
-
-      // 상단 바늘 위치(12시 방향, -90도/270도)에 위치한 캔버스 상의 각도를 역산
-      let pointerAngle = (270 - currentRotation) % 360;
-      if (pointerAngle < 0) pointerAngle += 360;
-
-      const selectedIndex = Math.floor(pointerAngle / sliceAngle);
-      const selectedMenu = menus[selectedIndex];
-
-      resultText.textContent = `🎉 오늘 점심은 [ ${selectedMenu} ] 입니다!`;
+      console.error(
+        "gsap.min.js 파일을 확인하세요."
+      );
     }
 
+
+    /* ==========================
+       룰렛 그리기
+    ========================== */
+
+    function drawRoulette() {
+
+      const numberOfSlices =
+        menus.length;
+
+
+      const arcSize =
+        (Math.PI * 2) /
+        numberOfSlices;
+
+
+      const centerX =
+        canvas.width / 2;
+
+
+      const centerY =
+        canvas.height / 2;
+
+
+      const radius =
+        canvas.width / 2;
+
+
+      ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+
+      menus.forEach(
+        (menu, index) => {
+
+          const startAngle =
+            index * arcSize;
+
+
+          const endAngle =
+            startAngle +
+            arcSize;
+
+
+          /* 파이 조각 */
+
+          ctx.beginPath();
+
+          ctx.moveTo(
+            centerX,
+            centerY
+          );
+
+          ctx.arc(
+            centerX,
+            centerY,
+            radius - 3,
+            startAngle,
+            endAngle
+          );
+
+          ctx.closePath();
+
+
+          ctx.fillStyle =
+            colors[
+              index %
+              colors.length
+            ];
+
+
+          ctx.fill();
+
+
+          ctx.strokeStyle =
+            "#ffffff";
+
+
+          ctx.lineWidth = 4;
+
+          ctx.stroke();
+
+
+          /* 메뉴 이름 */
+
+          const textAngle =
+            startAngle +
+            arcSize / 2;
+
+
+          const textRadius =
+            radius * 0.64;
+
+
+          const textX =
+            centerX +
+            Math.cos(
+              textAngle
+            ) *
+            textRadius;
+
+
+          const textY =
+            centerY +
+            Math.sin(
+              textAngle
+            ) *
+            textRadius;
+
+
+          ctx.save();
+
+
+          ctx.translate(
+            textX,
+            textY
+          );
+
+
+          /*
+            글자를 수평으로 유지합니다.
+            메뉴를 읽기 쉽도록 하기 위한 설정입니다.
+          */
+
+
+          const fontSize =
+            numberOfSlices <= 6
+              ? 29
+              : numberOfSlices <= 8
+              ? 25
+              : numberOfSlices <= 10
+              ? 21
+              : 18;
+
+
+          ctx.font =
+            `800 ${fontSize}px Pretendard,
+             sans-serif`;
+
+
+          ctx.textAlign =
+            "center";
+
+
+          ctx.textBaseline =
+            "middle";
+
+
+          ctx.fillStyle =
+            "#ffffff";
+
+
+          ctx.shadowColor =
+            "rgba(0,0,0,0.25)";
+
+
+          ctx.shadowBlur = 4;
+
+
+          /*
+            입력 길이가 길더라도
+            캔버스를 벗어나지 않도록
+            최대 폭을 지정합니다.
+          */
+
+          ctx.fillText(
+            menu,
+            0,
+            0,
+            radius * 0.55
+          );
+
+
+          ctx.restore();
+
+        }
+      );
+    }
+
+
+    /* ==========================
+       메뉴 목록
+    ========================== */
+
+    function updateMenuList() {
+
+      /*
+        사용자 입력값이 포함되므로
+        innerHTML을 사용하지 않습니다.
+      */
+
+      menuList.replaceChildren();
+
+
+      menus.forEach(
+        (menu, index) => {
+
+          const item =
+            document.createElement(
+              "div"
+            );
+
+
+          item.className =
+            "menu-item";
+
+
+          const name =
+            document.createElement(
+              "span"
+            );
+
+
+          name.textContent =
+            menu;
+
+
+          const deleteButton =
+            document.createElement(
+              "button"
+            );
+
+
+          deleteButton.type =
+            "button";
+
+
+          deleteButton.className =
+            "delete-btn";
+
+
+          deleteButton.textContent =
+            "×";
+
+
+          deleteButton.setAttribute(
+            "aria-label",
+            `${menu} 삭제`
+          );
+
+
+          deleteButton.disabled =
+            isSpinning;
+
+
+          deleteButton.addEventListener(
+            "click",
+            () => {
+
+              removeMenu(index);
+
+            }
+          );
+
+
+          item.appendChild(name);
+
+          item.appendChild(
+            deleteButton
+          );
+
+
+          menuList.appendChild(
+            item
+          );
+
+        }
+      );
+
+
+      drawRoulette();
+
+    }
+
+
+    /* ==========================
+       메뉴 삭제
+    ========================== */
+
+    function removeMenu(index) {
+
+      if (isSpinning) {
+        return;
+      }
+
+
+      if (menus.length <= 2) {
+
+        alert(
+          "최소 2개 이상의 메뉴가 필요합니다."
+        );
+
+        return;
+      }
+
+
+      menus.splice(
+        index,
+        1
+      );
+
+
+      resultText.textContent =
+        "메뉴가 변경되었습니다.";
+
+
+      resultText.classList.remove(
+        "highlight"
+      );
+
+
+      updateMenuList();
+
+    }
+
+
+    /* ==========================
+       메뉴 추가
+    ========================== */
+
+    function addMenu() {
+
+      if (isSpinning) {
+        return;
+      }
+
+
+      const newMenu =
+        menuInput.value.trim();
+
+
+      if (!newMenu) {
+
+        menuInput.focus();
+
+        return;
+      }
+
+
+      if (
+        menus.length >=
+        MAX_MENUS
+      ) {
+
+        alert(
+          `메뉴는 최대 ${MAX_MENUS}개까지 등록할 수 있습니다.`
+        );
+
+        return;
+      }
+
+
+      /*
+        동일 메뉴 중복 방지
+      */
+
+      const duplicated =
+        menus.some(
+          menu =>
+            menu.toLowerCase() ===
+            newMenu.toLowerCase()
+        );
+
+
+      if (duplicated) {
+
+        alert(
+          "이미 등록된 메뉴입니다."
+        );
+
+        return;
+      }
+
+
+      menus.push(
+        newMenu
+      );
+
+
+      menuInput.value =
+        "";
+
+
+      resultText.textContent =
+        `${newMenu} 메뉴를 추가했습니다.`;
+
+
+      resultText.classList.remove(
+        "highlight"
+      );
+
+
+      updateMenuList();
+
+
+      menuInput.focus();
+
+    }
+
+
+    addBtn.addEventListener(
+      "click",
+      addMenu
+    );
+
+
+    menuInput.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          event.preventDefault();
+
+          addMenu();
+
+        }
+
+      }
+    );
+
+
+    /* ==========================
+       컨트롤 잠금
+    ========================== */
+
+    function setControlsLocked(
+      locked
+    ) {
+
+      isSpinning =
+        locked;
+
+
+      spinBtn.disabled =
+        locked;
+
+
+      addBtn.disabled =
+        locked;
+
+
+      menuInput.disabled =
+        locked;
+
+
+      const deleteButtons =
+        menuList.querySelectorAll(
+          ".delete-btn"
+        );
+
+
+      deleteButtons.forEach(
+        button => {
+
+          button.disabled =
+            locked;
+
+        }
+      );
+
+    }
+
+
+    /* ==========================
+       룰렛 실행
+    ========================== */
+
+    spinBtn.addEventListener(
+      "click",
+      () => {
+
+        if (
+          isSpinning ||
+          typeof gsap ===
+            "undefined"
+        ) {
+
+          return;
+        }
+
+
+        setControlsLocked(
+          true
+        );
+
+
+        resultText.textContent =
+          "오늘의 점심 메뉴를 고르는 중...";
+
+
+        resultText.classList.remove(
+          "highlight"
+        );
+
+
+        /*
+          1. 먼저 메뉴를 선택합니다.
+
+          crypto.getRandomValues()를
+          사용할 수 있으면 이를 이용하고,
+          지원하지 않는 환경에서는
+          Math.random()을 사용합니다.
+        */
+
+        let randomValue;
+
+
+        if (
+          window.crypto &&
+          window.crypto.getRandomValues
+        ) {
+
+          const randomArray =
+            new Uint32Array(1);
+
+
+          window.crypto.getRandomValues(
+            randomArray
+          );
+
+
+          randomValue =
+            randomArray[0] /
+            4294967296;
+
+        } else {
+
+          randomValue =
+            Math.random();
+
+        }
+
+
+        const selectedIndex =
+          Math.floor(
+            randomValue *
+            menus.length
+          );
+
+
+        const selectedMenu =
+          menus[selectedIndex];
+
+
+        /*
+          2. 조각의 각도 계산
+        */
+
+        const sliceAngle =
+          360 /
+          menus.length;
+
+
+        /*
+          Canvas의 0도는
+          오른쪽(3시 방향)입니다.
+
+          포인터는 위쪽
+          즉 270도 위치입니다.
+        */
+
+        const selectedCenterAngle =
+          selectedIndex *
+          sliceAngle +
+          sliceAngle / 2;
+
+
+        /*
+          선택 메뉴의 중심이
+          270도 위치에 오도록 회전합니다.
+        */
+
+        let desiredRotation =
+          270 -
+          selectedCenterAngle;
+
+
+        desiredRotation =
+          (
+            (
+              desiredRotation %
+              360
+            ) +
+            360
+          ) %
+          360;
+
+
+        /*
+          현재 룰렛의 실제 각도
+        */
+
+        const currentNormalized =
+          (
+            (
+              rouletteState.rotation %
+              360
+            ) +
+            360
+          ) %
+          360;
+
+
+        /*
+          현재 각도에서
+          목표 위치까지 필요한 각도
+        */
+
+        const adjustment =
+          (
+            desiredRotation -
+            currentNormalized +
+            360
+          ) %
+          360;
+
+
+        /*
+          최소 6바퀴 +
+          무작위 추가 회전
+        */
+
+        const extraTurns =
+          6 +
+          Math.floor(
+            Math.random() * 3
+          );
+
+
+        const rotationAmount =
+          extraTurns *
+          360 +
+          adjustment;
+
+
+        const targetRotation =
+          rouletteState.rotation +
+          rotationAmount;
+
+
+        /*
+          GSAP 애니메이션
+        */
+
+        gsap.to(
+          rouletteState,
+          {
+
+            rotation:
+              targetRotation,
+
+            duration:
+              5.3,
+
+            ease:
+              "power4.out",
+
+            onUpdate:
+              () => {
+
+                canvas.style.transform =
+                  `rotate(${rouletteState.rotation}deg)`;
+
+              },
+
+
+            onComplete:
+              () => {
+
+                /*
+                  매우 큰 누적 각도를
+                  계속 유지하지 않도록
+                  0~360도로 정리합니다.
+                */
+
+                rouletteState.rotation =
+                  (
+                    (
+                      rouletteState.rotation %
+                      360
+                    ) +
+                    360
+                  ) %
+                  360;
+
+
+                canvas.style.transform =
+                  `rotate(${rouletteState.rotation}deg)`;
+
+
+                resultText.textContent =
+                  `🎉 오늘 점심은 [ ${selectedMenu} ] 입니다!`;
+
+
+                resultText.classList.add(
+                  "highlight"
+                );
+
+
+                /*
+                  결과 텍스트 등장 효과
+                */
+
+                gsap.fromTo(
+                  resultText,
+
+                  {
+                    scale: 0.8,
+                    opacity: 0
+                  },
+
+                  {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.55,
+                    ease:
+                      "back.out(1.7)"
+                  }
+                );
+
+
+                setControlsLocked(
+                  false
+                );
+
+              }
+
+          }
+        );
+
+      }
+    );
+
+
+    /* ==========================
+       최초 실행
+    ========================== */
+
     updateMenuList();
+
   </script>
+
 </body>
 </html>
